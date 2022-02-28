@@ -63,7 +63,7 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #     DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - run: |
-          DISPLAY=:0 xvfj-run -s '-screen 0 1-24x768x24' julia --color=yes --project=ArtefactModelling -e '
+          DISPLAY=:0 xvfb-run -s '-screen 0 1-24x768x24' julia --color=yes --project=ArtefactModelling -e '
             using Documenter: DocMeta, doctest
             using ArtefactModelling
             DocMeta.setdocmeta!(ArtefactModelling, :DocTestSetup, :(using ArtefactModelling); recursive=true)
