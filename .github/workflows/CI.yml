@@ -31,7 +31,7 @@ jobs:
       - uses: julia-actions/cache@v1
       - run: sudo apt-get update && sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
       - name: Install Julia dependencies
-        shell: julia --project=ArtefactModelling
+        shell: julia --project=ArtefactModelling {0}
         run: |
           using Pkg;
           pkg"dev ."
@@ -54,7 +54,7 @@ jobs:
       - uses: julia-actions/cache@v1
       - run: sudo apt-get update && sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
       - name: Install Julia dependencies
-        shell: julia --project=ArtefactModelling
+        shell: julia --project=ArtefactModelling {0}
         run: |
           using Pkg;
           pkg"dev ."
