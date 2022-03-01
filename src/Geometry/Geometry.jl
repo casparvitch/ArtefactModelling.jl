@@ -9,6 +9,7 @@ using FromFile: @from
 using StaticArrays: SVector, SMatrix
 
 @from "Transforms.jl" import Transforms:
+    # probably don't need most of these aye
     Vec3,
     unitX3,
     unitY3,
@@ -25,7 +26,7 @@ using StaticArrays: SVector, SMatrix
     up,
     forward,
     # it was imported from OpticSim, not required?? IDK
-    #     origin TODO origin(t::Transform{<:Real}) = Vec3(t[1, 4], t[2, 4], t[3, 4])
+    #origin(t::Transform{<:Real}) = Vec3(t[1, 4], t[2, 4], t[3, 4])
     rotationX,
     rotationY,
     rotationZ,
@@ -80,6 +81,7 @@ using StaticArrays: SVector, SMatrix
     samplesurface,
     NullOrFresnel,
     NullInterface,
+    ParaxialInterface,
     # Primitives etc.
     Plane,
     Sphere,

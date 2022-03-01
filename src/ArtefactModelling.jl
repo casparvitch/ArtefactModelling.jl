@@ -10,6 +10,7 @@ using GLMakie: GLMakie
 using FromFile: @from
 @from "Geometry/Geometry.jl" import Geometry
 @from "Vis/Vis.jl" import Vis
+@from "Materials.jl" import Materials
 
 #initialize these caches here so they will get the correct number of threads
 # from the load time environment, rather than the precompile environment. 
@@ -78,7 +79,7 @@ function vis_test()
     return Vis.draw(obj, resolution = (300, 300))
 end
 
-function prism_test() 
+function prism_test()
     ray = Geometry.Ray([0.0, 0.0, 0.0], [0.0, 1.0, 2.0])
     for gen in [
         Geometry.Cuboid(5.0, 5.0, 5.0),
@@ -86,7 +87,7 @@ function prism_test()
         Geometry.HexagonalPrism(2.0, 3.0),
         Geometry.RectangularPrism(2.0, 2.0),
         Geometry.TriangularPrism(1.0),
-#         Geometry.Spider(5, 2.0, 3.0)
+        #         Geometry.Spider(5, 2.0, 3.0)
     ]
         obj = gen()
         println(Geometry.surfaceintersection(obj, ray))

@@ -20,7 +20,8 @@ using LinearAlgebra: cross, normalize, norm, dot
     FresnelInterface,
     opaqueinterface,
     NullOrFresnel,
-    AllOpticalInterfaces
+    AllOpticalInterfaces,
+    ParaxialInterface
 
 @from "BoundingBoxes.jl" import BoundingBoxes: BoundingBoxes, BoundingBox
 @from "../utilities.jl" import samepoint,

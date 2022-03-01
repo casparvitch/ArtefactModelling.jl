@@ -6,9 +6,10 @@
 
 module OpticalInterfaces
 
+using StaticArrays: SVector
 using FromFile: @from
-@from "../Material/Materials.jl" import Materials:
-    AbstractMaterial, Air, MaterialID, AbstractTransparentMaterial, Glass
+@from "../Materials.jl" import Materials:
+    Air, AbstractTransparentMaterial
 
 # export OpticalInterface,
 #     InterfaceMode,
@@ -35,8 +36,8 @@ See documentation for [`processintersection`](@ref) for details.
 
 These methods are also commonly implemented, but not essential:
 ```julia
-insidematerialid(i::OpticalInterface{T}) -> OpticSim.GlassCat.AbstractGlass
-outsidematerialid(i::OpticalInterface{T}) -> OpticSim.GlassCat.AbstractGlass
+insidematerialname(i::OpticalInterface{T}) -> :Symbol
+outsidematerialname(i::OpticalInterface{T}) -> :Symbol
 reflectance(i::OpticalInterface{T}) -> T
 transmission(i::OpticalInterface{T}) -> T
 ```
@@ -53,7 +54,8 @@ Valid modes for deterministic raytracing
 """
     NullInterface{T} <: OpticalInterface{T}
 
-Interface which will be ignored totally by any rays, used only in construction of CSG objects.
+Interface which will be ignored totally by any rays, used only in construction 
+of CSG objects.
 
 ```julia
 NullInterface(T = Float64)
@@ -65,18 +67,17 @@ struct NullInterface{T} <: OpticalInterface{T}
     NullInterface{T}() where {T <: Real} = new{T}()
 end
 
-function insidematerialid(::NullInterface{T}) where {T <: Real}
-    return glassid(Air)
+function insidematerialname(::NullInterface{T}) where {T <: Real}
+    return :Air
 end
-function outsidematerialid(::NullInterface{T}) where {T <: Real}
-    return glassid(Air)
+function outsidematerialname(::NullInterface{T}) where {T <: Real}
+    return :Air
 end
 reflectance(::NullInterface{T}) where {T <: Real} = zero(T)
 transmission(::NullInterface{T}) where {T <: Real} = one(T)
 
 # ============================================================================ #
 
-#=
 """
     ParaxialInterface{T} <: OpticalInterface{T}
 
@@ -90,23 +91,34 @@ ParaxialInterface(focallength::T, centroid::SVector{3,T}, outsidematerial::Y)
 """
 struct ParaxialInterface{T} <: OpticalInterface{T}
     focallength::T
-    outsidematerial::GlassID
-    centroid::SVector{3,T}
-    function ParaxialInterface(focallength::T, centroid::SVector{3,T}, outsidematerial::Y) where {Y<:OpticSim.GlassCat.AbstractGlass,T<:Real}
+    outsidematerial::Symbol
+    centroid::SVector{3, T}
+    function ParaxialInterface(
+        focallength::T,
+        centroid::SVector{3, T},
+        outsidematerial::AbstractTransparentMaterial,
+    ) where {T <: Real}
         return new{T}(focallength, glassid(outsidematerial), centroid)
     end
 end
 
-function Base.show(io::IO, a::ParaxialInterface{R}) where {R<:Real}
-    print(io, "ParaxialInterface($(a.focallength), $(glassname(a.outsidematerial)))")
+function Base.show(io::IO, a::ParaxialInterface{R}) where {R <: Real}
+    return print(
+        io,
+        "ParaxialInterface($(a.focallength), $(glassname(a.outsidematerial)))",
+    )
 end
 
-insidematerialid(a::ParaxialInterface{T}) where {T<:Real} = a.outsidematerial
-outsidematerialid(a::ParaxialInterface{T}) where {T<:Real} = a.outsidematerial
-reflectance(::ParaxialInterface{T}) where {T<:Real} = zero(T)
-transmission(::ParaxialInterface{T}) where {T<:Real} = one(T)
+function insidematerialname(a::ParaxialInterface{T}) where {T <: Real}
+    return a.outsidematerial
+end
+function outsidematerialname(a::ParaxialInterface{T}) where {T <: Real}
+    return a.outsidematerial
+end
+reflectance(::ParaxialInterface{T}) where {T <: Real} = zero(T)
+transmission(::ParaxialInterface{T}) where {T <: Real} = one(T)
 opticalcenter(a::ParaxialInterface) = a.centroid
-focallength(a::ParaxialInterface) = a.focallength=#
+focallength(a::ParaxialInterface) = a.focallength
 
 # ============================================================================ #
 
@@ -129,8 +141,8 @@ example a beamsplitter surface may be set to either Reflect or Transmit to switc
 """
 struct FresnelInterface{T} <: OpticalInterface{T}
     # storing glasses as IDs (integer) rather than the whole thing seems to improve performance significantly, even when the Glass type is a fixed size (i.e. the interface is pointer-free)
-    insidematerial::MaterialID
-    outsidematerial::MaterialID
+    insidematerial::Symbol
+    outsidematerial::Symbol
     reflectance::T
     transmission::T
     interfacemode::InterfaceMode
@@ -147,8 +159,8 @@ struct FresnelInterface{T} <: OpticalInterface{T}
         T <: Real,
     }
         return FresnelInterface{T}(
-            glassid(insidematerial),
-            glassid(outsidematerial),
+            name(insidematerial),
+            name(outsidematerial),
             reflectance = reflectance,
             transmission = transmission,
             interfacemode = interfacemode,
@@ -156,8 +168,8 @@ struct FresnelInterface{T} <: OpticalInterface{T}
     end
 
     function FresnelInterface{T}(
-        insidematerialid::MaterialID,
-        outsidematerialid::MaterialID;
+        insidematerialname::Symbol,
+        outsidematerialname::Symbol;
         reflectance::T = zero(T),
         transmission::T = one(T),
         interfacemode = ReflectOrTransmit,
@@ -166,8 +178,8 @@ struct FresnelInterface{T} <: OpticalInterface{T}
         @assert zero(T) <= transmission <= one(T)
         @assert reflectance + transmission <= one(T)
         return new{T}(
-            insidematerialid,
-            outsidematerialid,
+            insidematerialname,
+            outsidematerialname,
             reflectance,
             transmission,
             interfacemode,
@@ -182,8 +194,10 @@ function Base.show(io::IO, a::FresnelInterface{R}) where {R <: Real}
     )
 end
 
-insidematerialid(a::FresnelInterface{T}) where {T <: Real} = a.insidematerial
-outsidematerialid(a::FresnelInterface{T}) where {T <: Real} = a.outsidematerial
+insidematerialname(a::FresnelInterface{T}) where {T <: Real} = a.insidematerial
+function outsidematerialname(a::FresnelInterface{T}) where {T <: Real}
+    return a.outsidematerial
+end
 reflectance(a::FresnelInterface{T}) where {T <: Real} = a.reflectance
 transmission(a::FresnelInterface{T}) where {T <: Real} = a.transmission
 interfacemode(a::FresnelInterface{T}) where {T <: Real} = a.interfacemode

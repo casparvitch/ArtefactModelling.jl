@@ -58,6 +58,8 @@ jobs:
         run: |
           using Pkg;
           pkg"dev ."
+      # might be better to do docs manually due to GLMakie issues
+      # this will avoid errors though...
       # - uses: julia-actions/julia-docdeploy@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

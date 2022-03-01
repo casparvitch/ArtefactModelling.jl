@@ -137,7 +137,7 @@ function insertknot(
 ) where {N, S}
     knotvalue = knots[knotindex]
     M = curveorder
-    K = [zeros(MVector{N, S}) for i in 1:(M + 1)]
+    K = [zeros(MVector{N, S}) for _ in 1:(M + 1)]
     newknots = vcat(knots[1:knotindex], [knotvalue], knots[(knotindex + 1):end])
     newcontrolpoints = vcat(
         controlpoints[1:(knotindex - M)],
